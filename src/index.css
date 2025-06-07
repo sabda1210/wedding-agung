@@ -33,7 +33,10 @@
   overflow: hidden;
   z-index: 1;
 }
-body {
+html, body {
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 }

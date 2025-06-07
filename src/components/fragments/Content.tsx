@@ -269,8 +269,8 @@ function Content() {
           } else {
             // Scroll down gradually
             window.scrollTo({
-              top: currentScroll + 0.5, // Slow scroll (0.5 pixels per frame)
-              behavior: "auto", // Using 'auto' for smoother animation
+              top: currentScroll + 0.7,
+              behavior: "auto",
             });
 
             // Schedule the next scroll
@@ -312,7 +312,7 @@ function Content() {
   // Add a button to restart auto-scrolling if needed
 
   return (
-    <div className=" bg-black flex items-center overflow-y-scroll justify-center w-screen">
+    <div className=" bg-black flex items-center justify-center w-screen">
       <div className="    max-w-[380px] w-full   ">
         <div className="fixed z-[999999] grid grid-cols-4 bottom-3 w-[350px] ml-[15px] bg-[#333446] h-[60px] shadow-xl/30 rounded-xl">
           {menus.map(({ id, icon: Icon, label }) => {
