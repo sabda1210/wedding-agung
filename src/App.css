@@ -1,0 +1,67 @@
+/* Mobile scrolling animation */
+@keyframes autoScroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.mobile-auto-scroll-container {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mobile-auto-scroll-content {
+  animation: autoScroll 60s linear infinite;
+  transform-origin: top center;
+  padding-bottom: 100vh; /* Extra space at the bottom */
+}
+
+/* Pause animation when needed */
+.mobile-auto-scroll-paused .mobile-auto-scroll-content {
+  animation-play-state: paused;
+}
+
+/* Debug indicator */
+.scroll-debug {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  z-index: 9999;
+}
+
+/* Larger, more accessible controls for mobile */
+.mobile-scroll-controls {
+  position: fixed;
+  bottom: 80px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.mobile-scroll-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #333446;
+  border: 2px solid #FFE6A7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.mobile-scroll-button svg {
+  color: #FFE6A7;
+  font-size: 24px;
+}

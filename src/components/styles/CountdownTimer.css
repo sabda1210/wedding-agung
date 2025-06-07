@@ -1,0 +1,43 @@
+.countdown-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  font-family: 'Cinzel', serif;
+}
+
+.time-box {
+  text-align: center;
+  background-color: #3a0a26;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100px;
+  color: #fbeec1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.flip {
+  animation: flipDown 0.7s ease-in-out;
+}
+
+.number {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.label {
+  margin-top: 5px;
+  display: block;
+  font-size: 16px;
+}
+
+@keyframes flipDown {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
