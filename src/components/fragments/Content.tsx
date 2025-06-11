@@ -50,7 +50,7 @@ function Content() {
   const isUserInteractingRef = useRef(false); // apakah user lagi interaksi manual
   const lastScrollTimeRef = useRef<number>(0); // buat simpan waktu terakhir interaksi user
 
-  const itemsPerPage = 2;
+  const itemsPerPage = 3;
 
   const totalPages = useMemo(() => {
     return Math.ceil(wishes.length / itemsPerPage);
@@ -309,6 +309,38 @@ function Content() {
 
   return (
     <div className=" bg-black    w-screen">
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[99998] overflow-hidden">
+        {Array.from({ length: 15 }).map((_, index) => {
+          // Random parameters for each flower
+          const startPositionX = Math.random() * 100;
+          const animationDuration = 8 + Math.random() * 12;
+          const size = 15 + Math.random() * 20;
+          const delay = Math.random() * 15;
+          const swaySpeed = 2 + Math.random() * 4;
+
+          return (
+            <div
+              key={index}
+              className="absolute"
+              style={{
+                left: `${startPositionX}%`,
+                top: "-50px",
+                animation: `falling ${animationDuration}s linear ${delay}s infinite`,
+              }}
+            >
+              <img
+                src="/flower.svg"
+                alt="falling flower"
+                style={{
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  animation: `sway ${swaySpeed}s ease-in-out infinite`,
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
       <div className="    max-w-[380px] mx-auto max-h-[9000px] relative overflow-hidden w-full   ">
         <div className="fixed z-[999999] grid grid-cols-4 bottom-3 w-[350px] ml-[15px] bg-[#333446] h-[60px] shadow-xl/30 rounded-xl">
           {menus.map(({ id, icon: Icon, label }) => {
@@ -904,7 +936,7 @@ function Content() {
               </button>
 
               <div
-                className="mt-8 max-h-[300px] overflow-y-auto"
+                className="mt-8 max-h-[400px] overflow-y-auto"
                 ref={(el) => {
                   // Auto scroll to bottom when content changes
                   if (el && !isLoading && currentWishes.length > 0) {
@@ -988,7 +1020,7 @@ function Content() {
                   </div>
                 </div>
               )}
-              <section className="w-full flex flex-col items-center justify-center mt-4 relative">
+              {/* <section className="w-full flex flex-col items-center justify-center mt-4 relative">
                 <img
                   src="/mailIcon.svg"
                   alt="barrier"
@@ -1014,7 +1046,7 @@ function Content() {
                     Mulai Isi Sekarang
                   </p>
                 </button>
-              </section>
+              </section> */}
             </div>
           </div>
         </section>

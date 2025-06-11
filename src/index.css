@@ -90,6 +90,29 @@ body {
   background-color: #444;
 }
 
+@keyframes falling {
+            0% {
+              transform: translateY(-50px);
+              opacity: 1;
+            }
+            85% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(100vh);
+              opacity: 0;
+            }
+          }
+          
+          @keyframes sway {
+            0%, 100% {
+              transform: translateX(-15px) rotate(0deg);
+            }
+            50% {
+              transform: translateX(15px) rotate(180deg);
+            }
+          }
+
 
 
 
