@@ -7,7 +7,7 @@ const PageInserUrl: React.FC = () => {
 
   const invitationUrl = `${
     import.meta.env.VITE_API_URL
-  }/agung-mila?to="${encodeURIComponent(recipient)}"`;
+  }/agung-mila?to=${encodeURIComponent(recipient)}`;
 
   const handleCopyUrl = () => {
     if (urlRef.current) {
