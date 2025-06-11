@@ -1,10 +1,12 @@
-import { useEffect, useState, useMemo } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState, useMemo, useRef } from "react";
 import "../../App.css";
-import AOS from "aos";
+
 import "aos/dist/aos.css";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import "@leenguyen/react-flip-clock-countdown/dist/index.css";
 import { LuCalendarClock } from "react-icons/lu";
+import { HiMiniSpeakerWave, HiMiniSpeakerXMark } from "react-icons/hi2";
 import { IoMdTime } from "react-icons/io";
 import { CiLocationOn } from "react-icons/ci";
 import Flowers from "../Icons/Flowers";
@@ -17,7 +19,7 @@ import {
 import { CgProfile } from "react-icons/cg";
 import Iframe from "react-iframe";
 import { IoCopy } from "react-icons/io5";
-import { generateDummyWishes } from "../../utils/dataDummy";
+import { addMessage, getMessages } from "../../model/messageModal";
 
 const menus = [
   { id: "home", icon: IoHome, label: "Home" },
@@ -34,22 +36,21 @@ interface Wish {
 }
 
 function Content() {
-  useEffect(() => {
-    AOS.init({
-      duration: 1000, // durasi animasi dalam ms
-    });
-  }, []);
-
   const [wishes, setWishes] = useState<Wish[]>([]);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("home");
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
-  const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [scrollInitialized, setScrollInitialized] = useState(false);
-  const [forceRestartScroll, setForceRestartScroll] = useState(false);
-  const itemsPerPage = 5;
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [isLoadingWishes, setIsLoadingWishes] = useState(false);
+  const [isActiveSound, setIsActiveSound] = useState(true);
+  const isAutoScrollingRef = useRef(false); // supaya handleScroll tau apakah auto-scroll lagi aktif
+  const isUserInteractingRef = useRef(false); // apakah user lagi interaksi manual
+  const lastScrollTimeRef = useRef<number>(0); // buat simpan waktu terakhir interaksi user
+
+  const itemsPerPage = 2;
 
   const totalPages = useMemo(() => {
     return Math.ceil(wishes.length / itemsPerPage);
@@ -61,39 +62,27 @@ function Content() {
     return wishes.slice(startIndex, endIndex);
   }, [wishes, currentPage, itemsPerPage]);
 
-  //   const fetchAllWishes = async () => {
-  //     setIsLoading(true);
-  //     setError(null);
-
-  //     try {
-  //       // Replace with your actual API endpoint
-  //       const response = await fetch("/api/wishes");
-
-  //       if (!response.ok) {
-  //         throw new Error("Failed to fetch wishes");
-  //       }
-
-  //       const data = await response.json();
-  //       setWishes(data || []);
-  //     } catch (err) {
-  //       setError(err instanceof Error ? err.message : "An error occurred");
-  //       console.error("Error fetching wishes:", err);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
   const fetchAllWishes = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Use dummy data instead of API call
-      const data = generateDummyWishes();
-      setWishes(data);
+      const data = await getMessages();
+      const response = data
+        .map((wish: any) => ({
+          id: wish.id,
+          name: wish.name || "Anonymous",
+          message: wish.message || "",
+          date: wish.timestamp || new Date().toISOString(),
+        }))
+        .sort((a, b) => {
+          // Sort from newest to oldest
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          return dateB.getTime() - dateA.getTime();
+        });
+      setWishes(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error("Error fetching wishes:", err);
@@ -117,22 +106,116 @@ function Content() {
   };
 
   // Add a scroll event listener to detect which section is currently in view
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     // Get all section elements with their corresponding menu IDs
+  //     const sections = ["home", "profile", "event", "wishes"]
+  //       .map((id) => document.getElementById(id))
+  //       .filter(Boolean);
+
+  //     // Find which section is currently most visible in the viewport
+  //     let currentSectionId = activeMenu;
+  //     let maxVisibility = 0;
+
+  //     sections.forEach((section) => {
+  //       if (!section) return;
+
+  //       const rect = section.getBoundingClientRect();
+  //       // Calculate how much of the section is visible
+  //       const visibleHeight =
+  //         Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+  //       const visiblePercentage =
+  //         visibleHeight > 0
+  //           ? visibleHeight / Math.min(section.offsetHeight, window.innerHeight)
+  //           : 0;
+
+  //       if (visiblePercentage > maxVisibility) {
+  //         maxVisibility = visiblePercentage;
+  //         currentSectionId = section.id;
+  //       }
+  //     });
+
+  //     // Update active menu if needed
+  //     if (currentSectionId !== activeMenu) {
+  //       setActiveMenu(currentSectionId);
+  //     }
+  //   };
+
+  //   // Add scroll event listener with throttling to improve performance
+  //   let ticking = false;
+  //   const scrollListener = () => {
+  //     if (!ticking) {
+  //       window.requestAnimationFrame(() => {
+  //         handleScroll();
+  //         ticking = false;
+  //       });
+  //       ticking = true;
+  //     }
+  //   };
+
+  //   window.addEventListener("scroll", scrollListener);
+
+  //   // Initial check in case the page is already scrolled
+  //   handleScroll();
+
+  //   // Cleanup
+  //   return () => {
+  //     window.removeEventListener("scroll", scrollListener);
+  //   };
+  // }, [activeMenu]); // Depend on activeMenu to avoid unnecessary updates
+
+  // Make sure page starts from the top on mount
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    if (isAutoScrolling) {
+      isAutoScrollingRef.current = true; // kasih tau kita lagi auto-scroll
+
+      interval = setInterval(() => {
+        if (window.innerHeight + window.scrollY < document.body.scrollHeight) {
+          window.scrollBy(0, 1);
+        } else {
+          window.scrollTo(0, 0); // reset ke atas
+        }
+      }, 16);
+    }
+
+    return () => {
+      isAutoScrollingRef.current = false; // kasih tau auto-scroll stop
+      if (interval) clearInterval(interval);
+    };
+  }, [isAutoScrolling]);
+
   useEffect(() => {
     const handleScroll = () => {
-      // Get all section elements with their corresponding menu IDs
+      lastScrollTimeRef.current = Date.now();
+
+      // Jangan pause auto-scroll kalau ini dari auto-scroll
+      if (
+        !isAutoScrollingRef.current &&
+        isAutoScrolling &&
+        !isUserInteractingRef.current
+      ) {
+        setIsAutoScrolling(false);
+
+        setTimeout(() => {
+          setIsAutoScrolling(true);
+        }, 5000);
+      }
+
+      // === Update activeMenu ===
       const sections = ["home", "profile", "event", "wishes"]
         .map((id) => document.getElementById(id))
         .filter(Boolean);
 
-      // Find which section is currently most visible in the viewport
       let currentSectionId = activeMenu;
       let maxVisibility = 0;
-
+      console.log("section");
       sections.forEach((section) => {
         if (!section) return;
 
         const rect = section.getBoundingClientRect();
-        // Calculate how much of the section is visible
         const visibleHeight =
           Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
         const visiblePercentage =
@@ -146,13 +229,11 @@ function Content() {
         }
       });
 
-      // Update active menu if needed
       if (currentSectionId !== activeMenu) {
         setActiveMenu(currentSectionId);
       }
     };
 
-    // Add scroll event listener with throttling to improve performance
     let ticking = false;
     const scrollListener = () => {
       if (!ticking) {
@@ -166,154 +247,69 @@ function Content() {
 
     window.addEventListener("scroll", scrollListener);
 
-    // Initial check in case the page is already scrolled
+    // Initial check
     handleScroll();
 
-    // Cleanup
     return () => {
       window.removeEventListener("scroll", scrollListener);
     };
-  }, [activeMenu]); // Depend on activeMenu to avoid unnecessary updates
+  }, [activeMenu, isAutoScrolling]);
 
-  // Make sure page starts from the top on mount
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    const handleUserInteract = () => {
+      isUserInteractingRef.current = true;
+      lastScrollTimeRef.current = Date.now();
 
-  // More reliable page load detection
-  useEffect(() => {
-    // Ensure we reset auto-scrolling state on each mount/refresh
-    setIsAutoScrolling(true);
-    setScrollInitialized(false);
+      if (isAutoScrolling) {
+        setIsAutoScrolling(false);
 
-    // First wait for component to fully mount
-    const timer = setTimeout(() => {
-      setIsPageLoaded(true);
-      console.log("Page loaded via timeout");
-    }, 800); // Slightly longer timeout for more reliability
-
-    // Also listen for window load event to ensure images are loaded
-    const handleLoad = () => {
-      setIsPageLoaded(true);
-      console.log("Page loaded via window.load event");
-    };
-
-    // Use both document ready state and load event for better reliability
-    if (document.readyState === "complete") {
-      setIsPageLoaded(true);
-      console.log("Page already loaded (readyState)");
-    } else {
-      window.addEventListener("load", handleLoad);
-    }
-
-    // Force scroll to top on mount/refresh
-    // window.scrollTo(0, 0);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("load", handleLoad);
-    };
-  }, []); // Empty dependency array to run only on mount
-
-  // Enhanced auto-scrolling functionality
-  const [scrollAnimationId, setScrollAnimationId] = useState<number | null>(
-    null
-  );
-
-  // Then modify the auto-scrolling functionality to track the animation ID
-  useEffect(() => {
-    // First check the ref (immediate check) before checking state
-    if (!isAutoScrolling || !isPageLoaded || scrollInitialized) return;
-
-    console.log("Initializing auto-scroll");
-    setScrollInitialized(true);
-
-    // Force scroll to top first to ensure we start from the beginning
-    if (!forceRestartScroll) {
-      // window.scrollTo(0, 0);
-    }
-    // window.scrollTo(0, 0);
-
-    // Use requestAnimationFrame for better performance and to ensure DOM is ready
-    const startScroll = () => {
-      // Check ref again before starting
-
-      // Small delay before starting auto-scroll to ensure animations have initialized
-      const timeoutId = setTimeout(() => {
-        // Function to continuously scroll the page
-        const smoothScroll = () => {
-          // Check ref on each frame for immediate response
-          if (!isAutoScrolling) return;
-
-          // Get current scroll position
-          const currentScroll = window.scrollY;
-
-          // Check if we've reached the bottom of the page
-          const isAtBottom =
-            window.innerHeight + currentScroll >=
-            document.body.offsetHeight - 10;
-
-          if (isAtBottom) {
-            // If at bottom, pause scrolling briefly, then reset to top
-            const bottomTimeoutId = setTimeout(() => {
-              // Check ref again before continuing
-              if (!isAutoScrolling) return;
-
-              window.scrollTo({ top: 0, behavior: "auto" });
-              const id = requestAnimationFrame(smoothScroll);
-              setScrollAnimationId(id);
-            }, 3000); // Pause at bottom for 3 seconds
-
-            // Store the timeout ID so we can clear it if needed
-            return bottomTimeoutId;
-          } else {
-            // Scroll down gradually
-            window.scrollTo({
-              top: currentScroll + 0.7,
-              behavior: "auto",
-            });
-
-            // Schedule the next scroll
-            if (isAutoScrolling) {
-              const id = requestAnimationFrame(smoothScroll);
-              setScrollAnimationId(id);
-            }
-          }
-        };
-
-        // Start scrolling
-        const id = requestAnimationFrame(smoothScroll);
-        setScrollAnimationId(id);
-      }, 1000); // 1 second delay before starting auto-scroll
-
-      // Return a cleanup function that clears the timeout
-      return timeoutId;
-    };
-
-    // Start scrolling using requestAnimationFrame to ensure browser is ready
-    const frameId = requestAnimationFrame(startScroll);
-
-    // Clean up function to cancel animation when component unmounts
-    return () => {
-      cancelAnimationFrame(frameId);
-      if (scrollAnimationId !== null) {
-        cancelAnimationFrame(scrollAnimationId);
-        setScrollAnimationId(null);
+        setTimeout(() => {
+          isUserInteractingRef.current = false;
+          setIsAutoScrolling(true);
+        }, 5000);
       }
     };
-  }, [
-    isAutoScrolling,
-    isPageLoaded,
-    scrollInitialized,
-    scrollAnimationId,
-    forceRestartScroll,
-  ]);
 
-  // Add a button to restart auto-scrolling if needed
+    window.addEventListener("wheel", handleUserInteract, { passive: true });
+    window.addEventListener("touchstart", handleUserInteract, {
+      passive: true,
+    });
+    window.addEventListener("touchmove", handleUserInteract, { passive: true });
+    window.addEventListener("keydown", handleUserInteract);
+
+    return () => {
+      window.removeEventListener("wheel", handleUserInteract);
+      window.removeEventListener("touchstart", handleUserInteract);
+      window.removeEventListener("touchmove", handleUserInteract);
+      window.removeEventListener("keydown", handleUserInteract);
+    };
+  }, [isAutoScrolling]);
+
+  const handleSubmitWish = async () => {
+    setIsLoadingWishes(true);
+    try {
+      if (!name || !message) return;
+      const res = await addMessage({
+        name: name,
+        message: message,
+        timestamp: new Date().toISOString(),
+      });
+      console.log("Wish submitted successfully:", res);
+      if (res) {
+        setName("");
+        setMessage("");
+        fetchAllWishes();
+      }
+    } catch (error) {
+      console.log("Error submitting wish:", error);
+    } finally {
+      setIsLoadingWishes(false);
+    }
+  };
 
   return (
-    <div className=" bg-black flex items-center justify-center w-screen">
-      <div className="    max-w-[380px] w-full   ">
+    <div className=" bg-black    w-screen">
+      <div className="    max-w-[380px] mx-auto max-h-[9000px] relative overflow-hidden w-full   ">
         <div className="fixed z-[999999] grid grid-cols-4 bottom-3 w-[350px] ml-[15px] bg-[#333446] h-[60px] shadow-xl/30 rounded-xl">
           {menus.map(({ id, icon: Icon, label }) => {
             const isActive = activeMenu === id;
@@ -322,23 +318,12 @@ function Content() {
               <div
                 key={id}
                 onClick={(e) => {
-                  // Stop event propagation
                   e.stopPropagation();
 
-                  // Set the ref immediately (this happens synchronously)
-
-                  // Cancel any ongoing animation frame
-                  if (scrollAnimationId !== null) {
-                    cancelAnimationFrame(scrollAnimationId);
-                    setScrollAnimationId(null);
-                  }
-
-                  // Set active menu and ensure auto-scrolling is permanently stopped
-                  setActiveMenu(id);
+                  isUserInteractingRef.current = true;
                   setIsAutoScrolling(false);
-                  setScrollInitialized(false);
+                  setActiveMenu(id);
 
-                  // Force scroll to the target section immediately
                   const targetElement = document.getElementById(id);
                   if (targetElement) {
                     setTimeout(() => {
@@ -347,11 +332,13 @@ function Content() {
                         block: "start",
                       });
                     }, 10);
+
+                    // Setelah 5 detik resume auto-scroll
+                    setTimeout(() => {
+                      isUserInteractingRef.current = false;
+                      setIsAutoScrolling(true);
+                    }, 5000);
                   }
-                  setTimeout(() => {
-                    setForceRestartScroll(true); // ⬅️ trigger restart auto-scroll tanpa scroll ke atas
-                    setIsAutoScrolling(true);
-                  }, 1000);
                 }}
                 className="flex flex-col items-center justify-center cursor-pointer"
               >
@@ -374,6 +361,20 @@ function Content() {
               </div>
             );
           })}
+        </div>
+        <div className="fixed z-[999999] right-0  h-max w-max  top-0">
+          <section
+            onClick={() => {
+              setIsActiveSound(!isActiveSound);
+            }}
+            className=" p-2 rounded-full opacity-60 border border-text-primary cursor-pointer bg-[#333446] w-max h-max "
+          >
+            {isActiveSound ? (
+              <HiMiniSpeakerWave className="text-text-primary text-[30px]" />
+            ) : (
+              <HiMiniSpeakerXMark className="text-text-primary text-[30px]" />
+            )}
+          </section>
         </div>
 
         {/* <img src="/Image.png" alt="image semua" /> */}
@@ -585,11 +586,11 @@ function Content() {
             <section className=" w-full h-full px-3">
               <div className="tittle w-full border-b gap-x-7 border-text-primary pb-2 flex items-center justify-center">
                 <p className=" text-text-primary text-[62px] font-garamond font-semibold">
-                  06
+                  03
                 </p>
                 <section className=" text-text-primary text-[18px] font-garamond font-medium">
-                  <p>Sabtu</p>
-                  <p>July</p>
+                  <p>Selasa</p>
+                  <p>Juni</p>
                   <p>2025</p>
                 </section>
               </div>
@@ -776,7 +777,7 @@ function Content() {
                     />
                     <div className=" grid grid-cols-[1fr_40%] py-6">
                       <section className=" text-[#333446] font-garamond font-medium text-[16px]">
-                        <p>3343201</p>
+                        <p>8135638630</p>
                         <p>a/n Agung Dedi Saputra</p>
                       </section>
                       <IoCard className="text-[#333446] text-[60px] " />
@@ -786,7 +787,9 @@ function Content() {
                         border-2 border-text-primary shadow-[0_6px_0_0_#D4AF37] hover:shadow-[0_3px_0_0_#D4AF37] 
                         hover:translate-y-1 active:translate-y-2 active:shadow-[0_0px_0_0_#D4AF37] 
                         transition-all duration-150 transform"
-                      onClick={() => navigator.clipboard.writeText("3343201")}
+                      onClick={() =>
+                        navigator.clipboard.writeText("8135638630")
+                      }
                     >
                       <IoCopy className="text-text-primary text-[15px]" />
                       <p className="text-text-primary text-[12px] font-garamond font-medium">
@@ -809,8 +812,8 @@ function Content() {
                     />
                     <div className=" grid grid-cols-[1fr_40%] py-6">
                       <section className=" text-[#333446] font-garamond font-medium text-[16px]">
-                        <p>3343201</p>
-                        <p>a/n Agung Dedi Saputra</p>
+                        <p>8230507211</p>
+                        <p>a/n Dolly Sharmila Ghozali </p>
                       </section>
                       <IoCard className="text-[#333446] text-[60px] " />
                     </div>
@@ -819,7 +822,9 @@ function Content() {
                         border-2 border-text-primary shadow-[0_6px_0_0_#D4AF37] hover:shadow-[0_3px_0_0_#D4AF37] 
                         hover:translate-y-1 active:translate-y-2 active:shadow-[0_0px_0_0_#D4AF37] 
                         transition-all duration-150 transform"
-                      onClick={() => navigator.clipboard.writeText("3343201")}
+                      onClick={() =>
+                        navigator.clipboard.writeText("8230507211")
+                      }
                     >
                       <IoCopy className="text-text-primary text-[15px]" />
                       <p className="text-text-primary text-[12px] font-garamond font-medium">
@@ -860,6 +865,9 @@ function Content() {
                 <input
                   type="text"
                   id="name"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="Masukan Nama anda"
                   className="border p-2 px-4 rounded-xl border-text-primary bg-transparent text-text-primary font-garamond font-normal"
                 />
@@ -874,6 +882,8 @@ function Content() {
                 <textarea
                   id="message"
                   placeholder="Masukan Harapan dan Doa anda"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="border min-h-[100px] p-2 px-4 rounded-xl border-text-primary bg-transparent text-text-primary font-garamond font-normal"
                 />
               </div>
@@ -881,6 +891,8 @@ function Content() {
 
             <div data-aos="fade-up" className="wishlist-container w-[80%] mt-8">
               <button
+                onClick={handleSubmitWish}
+                disabled={isLoadingWishes}
                 className="flex items-center justify-center w-full bg-[#333446] rounded-2xl p-3 text-center gap-x-2 cursor-pointer
                     border-2 border-text-primary shadow-[0_6px_0_0_#D4AF37] hover:shadow-[0_3px_0_0_#D4AF37] 
                     hover:translate-y-1 active:translate-y-2 active:shadow-[0_0px_0_0_#D4AF37] 
@@ -929,7 +941,11 @@ function Content() {
                               {wish.name}
                             </h4>
                             <span className="text-text-primary/70 text-xs font-garamond">
-                              {wish.date}
+                              {new Date(wish.date).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
                             </span>
                           </div>
                           <p className="text-text-primary text-sm font-garamond italic">
