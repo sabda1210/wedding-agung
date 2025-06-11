@@ -31,6 +31,7 @@ const menus = [
 interface Wish {
   id: number;
   name: string;
+  attendance: string;
   message: string;
   date: string;
 }
@@ -39,6 +40,7 @@ function Content() {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [attendance, setAttendance] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState("");
@@ -74,6 +76,7 @@ function Content() {
           id: wish.id,
           name: wish.name || "Anonymous",
           message: wish.message || "",
+          attendance: wish.attendance || "Hadir",
           date: wish.timestamp || new Date().toISOString(),
         }))
         .sort((a, b) => {
@@ -288,16 +291,18 @@ function Content() {
   const handleSubmitWish = async () => {
     setIsLoadingWishes(true);
     try {
-      if (!name || !message) return;
+      if (!name || !message || !attendance) return;
       const res = await addMessage({
         name: name,
         message: message,
+        attendance: attendance,
         timestamp: new Date().toISOString(),
       });
       console.log("Wish submitted successfully:", res);
       if (res) {
         setName("");
         setMessage("");
+        setAttendance("");
         fetchAllWishes();
       }
     } catch (error) {
@@ -581,7 +586,28 @@ function Content() {
               className="flip-clock"
               showSeparators={true}
             />
-            <div className="flex items-center gap-x-2 py-[8px] cursor-pointer mt-9 border-t border-b border-text-primary">
+            <div
+              className="flex items-center gap-x-2 py-[8px] cursor-pointer mt-9 border-t border-b border-text-primary"
+              onClick={() => {
+                const eventTitle = "Pernikahan Mila & Agung";
+                const eventDescription =
+                  "Pernikahan Dolly Sharmila Ghozali dan Agung Dedi Saputra";
+                const eventLocation =
+                  "Gedung guru Riau, Jl. Jendral Sudirman No. 10, Pekanbaru";
+
+                // Format: YYYYMMDDTHHMMSSZ (ISO 8601)
+                const startDate = "20250706T090000";
+                const endDate = "20250706T130000";
+
+                const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+                  eventTitle
+                )}&dates=${startDate}/${endDate}&details=${encodeURIComponent(
+                  eventDescription
+                )}&location=${encodeURIComponent(eventLocation)}`;
+
+                window.open(url, "_blank");
+              }}
+            >
               <LuCalendarClock className="text-text-primary text-[30px] " />
               <p className=" text-text-primary text-[16px] font-garamond font-medium">
                 Save the Date
@@ -907,6 +933,27 @@ function Content() {
               <div className="flex flex-col gap-y-2">
                 <label
                   className=" text-text-primary font-garamond font-medium text-[16px]"
+                  htmlFor="attendance"
+                >
+                  Kehadiran
+                </label>
+                <select
+                  id="attendance"
+                  name="attendance"
+                  onChange={(e) => setAttendance(e.target.value)}
+                  value={attendance}
+                  className="border p-2 px-4 rounded-xl border-text-primary bg-transparent text-text-primary font-garamond font-normal appearance-none"
+                >
+                  <option value="" disabled>
+                    Pilih Kehadiran
+                  </option>
+                  <option value="hadir">Hadir</option>
+                  <option value="tidak hadir">Tidak Hadir</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-y-2">
+                <label
+                  className=" text-text-primary font-garamond font-medium text-[16px]"
                   htmlFor="name"
                 >
                   Harapan dan Doa
@@ -970,7 +1017,10 @@ function Content() {
                         >
                           <div className="flex justify-between items-center mb-2">
                             <h4 className="text-text-primary font-garamond font-semibold">
-                              {wish.name}
+                              {wish.name}{" "}
+                              <span className="border text-[12px] px-2 py-1 ml-2 border-text-primary rounded-2xl">
+                                {wish.attendance || "Tidak Hadir"}
+                              </span>
                             </h4>
                             <span className="text-text-primary/70 text-xs font-garamond">
                               {new Date(wish.date).toLocaleDateString("en-GB", {

@@ -1,8 +1,9 @@
 import "../styles/Hero.css";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
 const Hero: React.FC<{ onClick: () => void }> = (props) => {
-  console.log(props.onClick, "sabda");
+  const [nameParam, setNameParam] = useState<string | null>(null);
+
   const container = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: container,
@@ -34,6 +35,11 @@ const Hero: React.FC<{ onClick: () => void }> = (props) => {
     { top: "22.5vh", left: "25vw", width: "15vw", height: "15vh" },
   ];
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setNameParam(searchParams.get("to"));
+  }, []);
+
   return (
     <div
       ref={container}
@@ -63,7 +69,7 @@ const Hero: React.FC<{ onClick: () => void }> = (props) => {
                 Bpk/Ibu/Saudara/i
               </p>
               <p className="font-playwrite text-[#8a6d3b] text-lg font-semibold py-2 px-4 border-t border-b border-[#d4b88b] mx-auto inline-block">
-                "Keluarga Besar Udin"
+                {nameParam ? `"${nameParam}"` : ""}
               </p>
 
               <div className="mt-4 text-[#9c7c3c] text-sm font-garamond italic">
