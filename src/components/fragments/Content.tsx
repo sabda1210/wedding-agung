@@ -20,6 +20,7 @@ import { CgProfile } from "react-icons/cg";
 import Iframe from "react-iframe";
 import { IoCopy } from "react-icons/io5";
 import { addMessage, getMessages } from "../../model/messageModal";
+import sound from "../../../public/sound.mp3";
 
 const menus = [
   { id: "home", icon: IoHome, label: "Home" },
@@ -312,6 +313,30 @@ function Content() {
     }
   };
 
+  // Music
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio(sound);
+    audioRef.current.loop = true; // optional: loop musik
+
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isActiveSound) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isActiveSound]);
+
   return (
     <div className=" bg-black    w-screen">
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[99998] overflow-hidden">
@@ -407,9 +432,21 @@ function Content() {
             className=" p-2 rounded-full opacity-60 border border-text-primary cursor-pointer bg-[#333446] w-max h-max "
           >
             {isActiveSound ? (
-              <HiMiniSpeakerWave className="text-text-primary text-[30px]" />
+              <HiMiniSpeakerWave
+                onClick={() => {
+                  setIsActiveSound(true);
+                  // handlePlay();
+                }}
+                className="text-text-primary text-[30px]"
+              />
             ) : (
-              <HiMiniSpeakerXMark className="text-text-primary text-[30px]" />
+              <HiMiniSpeakerXMark
+                onClick={() => {
+                  setIsActiveSound(false);
+                  // handlePause();
+                }}
+                className="text-text-primary text-[30px]"
+              />
             )}
           </section>
         </div>
