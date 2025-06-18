@@ -702,8 +702,8 @@ function Content() {
                       Lokasi Acara:{" "}
                     </p>
                     <p className="text-[13px] text-text-primary font-garamond font-normal">
-                      Jl.Sepakat, Perumahan Mutiara Kulim Permai, Jl.Meranti
-                      No.02
+                      KUA SUKAJADI, Jalan Bunga Kertas, Harjosari, Sukajadi,
+                      Harjosari, Kec. Pekanbaru Kota, Kota Pekanbaru, Riau
                     </p>
                   </div>
                 </div>
@@ -740,8 +740,8 @@ function Content() {
                       Lokasi Acara:{" "}
                     </p>
                     <p className="text-[13px] text-text-primary font-garamond font-normal">
-                      Jl.Sepakat, Perumahan Mutiara Kulim Permai, Jl.Meranti
-                      No.02
+                      Gedung Widya Maharany (GWM), Jl. Makmur, Labuh Baru Bar.,
+                      Kec. Payung Sekaki, Kota Pekanbaru, Riau 28293
                     </p>
                   </div>
                 </div>
@@ -781,11 +781,12 @@ function Content() {
                 data-aos="zoom-in"
                 className=" text-text-primary text-[15px] w-[80%] text-center mx-auto  font-garamond font-normal"
               >
-                Gedung guru Riau, Jl. Jendral Sudirman No. 10, Pekanbaru,
+                Gedung Widya Maharany (GWM), Jl. Makmur, Labuh Baru Bar., Kec.
+                Payung Sekaki, Kota Pekanbaru, Riau 28293
               </p>
             </div>
             <Iframe
-              url="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29590.116851831142!2d101.41305178062453!3d0.47937236901882496!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d5a8d43b130f43%3A0x7ec9543669eb38f3!2sGedung%20Guru!5e1!3m2!1sen!2sid!4v1748314560424!5m2!1sen!2sid"
+              url="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.655156993618!2d101.4012544763024!3d0.518171898127601!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d5abd80b342f57%3A0x9bc2479e7e3bd925!2sGedung%20Widya%20Maharany%20(GWM)!5e0!3m2!1sen!2sid!4v1750259427125!5m2!1sen!2sid"
               width="80%"
               height="250px"
               id=""
@@ -793,7 +794,15 @@ function Content() {
               display="block"
               position="relative"
             />
-            <div className="flex items-center cursor-pointer gap-x-2 py-[8px] cursor-pointer mt-4 border-t border-b border-text-primary">
+            <div
+              onClick={() =>
+                window.open(
+                  "https://www.google.com/maps/place/Gedung+Widya+Maharany+(GWM)/@0.5181719,101.4012545,17z/data=!3m1!4b1!4m6!3m5!1s0x31d5abd80b342f57:0x9bc2479e7e3bd925!8m2!3d0.5181719!4d101.4061254!16s%2Fg%2F11q2680p9m?entry=ttu&g_ep=EgoyMDI1MDYxNS4wIKXMDSoASAFQAw%3D%3D",
+                  "_blank"
+                )
+              }
+              className="flex items-center relative z-[999999999] gap-x-2 py-[8px] cursor-pointer mt-4 border-t border-b border-text-primary"
+            >
               <CiLocationOn className="text-text-primary text-[30px] " />
               <p className=" text-text-primary text-[16px] font-garamond font-medium">
                 Lihat Lokasi Acara

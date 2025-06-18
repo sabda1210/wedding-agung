@@ -9,13 +9,53 @@ const PageInserUrl: React.FC = () => {
     import.meta.env.VITE_API_URL
   }/agung-mila?to=${encodeURIComponent(recipient)}`;
 
+  const getFormattedInvitationText = () => {
+    return `💐 UNDANGAN PERNIKAHAN 💐
+
+Kepada Yth:
+${recipient}
+
+Segala puji bagi Allah SWT yang telah menciptakan makhluk-Nya berpasang-pasangan. Dengan ini kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami :
+
+Agung
+
+dengan
+
+Mila
+
+Insyaa Allah yang akan diselenggarakan pada:
+06 July 2025
+
+🏢 Tempat Acara
+Gedung Widya Maharany (GWM), Jl. Makmur, Labuh Baru Bar., Kec. Payung Sekaki, Kota Pekanbaru, Riau 28293
+
+Klik link berikut untuk Undangan Resmi:
+${invitationUrl}
+
+Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan do'a terbaiknya.
+
+
+Terima kasih
+
+💌
+Wedding E-Invitation ini merupakan undangan resmi dari kami, karena jarak & waktu kami mohon maaf apabila mengirim undangan ini melalui media online. Semoga tidak mengurangi rasa hormat dan makna serta isinya.
+
+Kami yang berbahagia,
+Agung & Mila`;
+  };
+
   const handleCopyUrl = () => {
-    if (urlRef.current) {
-      urlRef.current.select();
-      document.execCommand("copy");
-      setCopySuccess("Copied!");
-      setTimeout(() => setCopySuccess(""), 2000);
-    }
+    const textToCopy = getFormattedInvitationText();
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        setCopySuccess("Copied!");
+        setTimeout(() => setCopySuccess(""), 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        setCopySuccess("Failed to copy");
+      });
   };
 
   return (
@@ -50,7 +90,7 @@ const PageInserUrl: React.FC = () => {
             className="copy-button"
             disabled={!recipient}
           >
-            {copySuccess || "Copy"}
+            {copySuccess || "Copy Invitation"}
           </button>
         </div>
       </div>
