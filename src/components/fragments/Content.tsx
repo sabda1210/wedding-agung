@@ -694,7 +694,7 @@ function Content() {
                   <div className="flex items-center gap-x-2">
                     <IoMdTime className="text-text-primary text-[30px]" />
                     <p className=" text-text-primary text-[16px] font-garamond font-medium">
-                      09.00 - 10.00 WIB
+                      09.00 WIB - Selesai
                     </p>
                   </div>
                   <div className=" w-full mt-3">
@@ -732,7 +732,7 @@ function Content() {
                   <div className="flex items-center gap-x-2">
                     <IoMdTime className="text-text-primary text-[30px]" />
                     <p className=" text-text-primary text-[16px] font-garamond font-medium">
-                      09.00 - 10.00 WIB
+                      09.00 WIB - Selesai
                     </p>
                   </div>
                   <div className=" w-full mt-3">
